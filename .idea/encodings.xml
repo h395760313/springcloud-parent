@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/springcloud_00_common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_01_eureka_client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_02_consul_client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_03_users/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_04_orders/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_04_orders/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_05_product/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_06_category/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_07_hystrix/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_08_openfeign_hystrix/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_09_gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/springcloud_eureka_server/src/main/java" charset="UTF-8" />
+  </component>
+</project>

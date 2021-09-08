@@ -1,0 +1,11 @@
+server:
+  port: 8802
+spring:
+  application:
+    name: CONSUL-CLIENT
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: ${spring.application.name} # 指定注册当前服务的服务名称  默认：${spring.application.name}

@@ -1,0 +1,19 @@
+server:
+  port: 7979
+spring:
+  application:
+    name: GATEWAY
+  cloud:
+    consul:
+      port: 8500
+      host: localhost
+#    gateway:
+#      routes:
+#        - id: category-router  # 路由对象唯一标识
+#          uri: http://localhost:8807  # 服务地址
+#          predicates:  # 断言 配置路由规则
+#            - Path=/category/**
+#        - id: product-router
+#          uri: http://localhost:8808
+#          predicates:
+#            - Path=/product/**

@@ -1,0 +1,12 @@
+server:
+  port: 8803
+spring:
+  application:
+    name: USERS
+  cloud:
+    consul:
+      port: 8500
+      host: localhost
+ORDERS:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
