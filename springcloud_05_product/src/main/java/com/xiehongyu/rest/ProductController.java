@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -21,7 +22,10 @@ public class ProductController {
     private int port;
 
     @GetMapping("/product")
-    public String product(){
+    public String product(HttpServletRequest request, String color){
+        String header = request.getHeader("User-Name");
+        System.out.println("获取到的请求头：" + header);
+        System.out.println("获取到的请求参数 color：" + color);
         log.info("product service...");
         return "product 调用成功，端口是：" + port;
     }

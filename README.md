@@ -771,3 +771,177 @@ public class GatewayConfig {
 }
 ```
 
+#### Gateway实现负载均衡
+
+```yml
+server:
+  port: 7979
+spring:
+  application:
+    name: GATEWAY
+  cloud:
+    consul:
+      port: 8500
+      host: localhost
+    gateway:
+      routes:
+        - id: category-router  # 路由对象唯一标识
+#          uri: http://localhost:8807  # 服务地址
+          uri: lb://CATEGORY
+          predicates:  # 断言 配置路由规则
+            - Path=/category/**
+        - id: product-router
+#          uri: http://localhost:8808
+          uri: lb://PRODUCT
+          predicates:
+            - Path=/product/**
+```
+
+#### Gateway的断言和过滤
+
+Gateway = 断言 predicate + 过滤(后置filter)
+
+断言：当请求到达网关时，网关前置处理。满足断言放行请求，不满足立即返回。
+
+过滤：当请求满足断言的所有条件之后，会向后端服务转发，在向后端服务转发之前会经过一些过滤。
+
+##### 网关断言的使用 
+
+Route Predicate Factories
+
+```
+- Path=/product/**		路径断言
+- After=2021-09-08T15:22:17.590+08:00[Asia/Shanghai]		该路由规则必须在指定时间之后有效
+- Before=2021-09-08T15:22:17.590+08:00[Asia/Shanghai]		该路由规则必须在指定时间之前有效，过了失效
+- Between=2021-09-08T15:22:17.590+08:00[Asia/Shanghai],2021-09-08T15:23:17.590+08:00[Asia/Shanghai]		该路由规则在某个时间段内有效
+- Cookie=name,xiehongyu		携带指定cookie请求才能访问，指定key、value
+- Cookie=name,[A-Za-z0-9]+	指定key，value使用正则
+- Header=X-Request-Id,\d+		请求必须包含指定请求头才有效
+- Method=GET		限定指定请求方式才可用
+```
+
+##### 网关过滤的使用
+
+GatewayFilter Factories
+
+1. 内置filter
+
+```
+AddRequestHeader Filter					用来给路由对象的所有转发请求加入指定请求头信息
+- AddRequestHeader=User-Name,xiehongyu
+AddRequestParameter							用来给路由对象的所有转发请求加入指定请求参数
+- AddRequestParameter=color,blue
+AddResponseHeader Filter 				用来给路由对象的所有转发请求的响应加入指定头信息
+- AddResponseHeader=X-response-Red,blue
+PrefixPath Filter 							用来给路由对象的所有转发请求的url加入指定前缀信息
+如： 浏览器访问网关地址:/list  前缀路径/mypath   转发到后端服务地址为：uri+前缀路径+地址栏路径-> uri+/mypath/list
+- PrefixPath=/product
+StripPrefix Filter 							用来给路由对象的所有转发请求的url去掉指定n个前缀
+如：浏览器访问网关地址:/product/list  StripPrefix=1 -> /list   后端接口：/list
+- StripPrefix=1
+```
+
+2. 自动移全局filter  所有请求都要经过全局filter再转发到后端服务
+
+```java
+/**
+ * @Description: 自定义网关全局Filter
+ * @Author: xiehongyu
+ * @Date: 2021/9/8 16:17
+ */
+@Configuration
+public class CustomerGlobalFilter implements GlobalFilter, Ordered {
+    /**
+     * 类似javaWeb的 doFilter
+     * @param exchange 交换，封装了request、response
+     * @param chain
+     * @return
+     */
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // 相当于httpServletRequest
+        ServerHttpRequest request = exchange.getRequest();
+        // 相当于httpServletResponse
+        ServerHttpResponse response = exchange.getResponse();
+        System.out.println("经过全局Filter处理。。。");
+        Mono<Void> filter = chain.filter(exchange);
+        System.out.println("响应回来Filter处理。。。");
+        return filter;
+    }
+
+    /**
+     * order 排序
+     * @return 用来指定filter执行顺序，默认顺序按照自然数字进行排序  -1 在所有filter之前执行
+     */
+    @Override
+    public int getOrder() {
+        return -1;
+    }
+}
+```
+
+3. 通过网关提供web路径查看路由详细规则
+
+http://localhost:7979/actuator/gateway/routes
+
+查看网关路由规则详细路径必须在网关配置文件中暴露当前路径
+
+```yml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+```
+
+
+
+### Config
+
+#### 什么是Config
+
+> config(配置)又称为 统一配置中心，顾名思义就是将配置统一管理，配置统一管理的好处是大规模集群部署服务应用时相同的服务配置一致，日后再修改配置只需要统一修改全部同步，不需要一个一个服务手动维护。
+
+统一配置中心组件流程图
+
+![image-20210908170208485](/Users/xiehongyu/IdeaProject/springcloud_parent/images/image-20210908170208485.png)
+
+#### Config组件的使用
+
+1. 引入config server 依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-config-server</artifactId>
+</dependency>
+```
+
+2. 添加配置
+
+```yml
+server:
+  port: 8848
+spring:
+  application:
+    name: CONFIG-SERVER
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+    config:
+      server:
+        git:
+          uri: https://github.com/h395760313/configs.git  # 远程仓库地址
+          default-label: master # 远程仓库分支
+```
+
+3. 启动类加入注解，开启统一配置中心
+
+```java
+@SpringBootApplication
+@EnableDiscoveryClient
+@EnableConfigServer
+public class ConfigServerApplication {...}
+```
+

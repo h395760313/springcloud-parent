@@ -10,14 +10,16 @@
         <module name="springcloud_04_orders" />
         <module name="springcloud_05_product" />
         <module name="springcloud_01_eureka_client" />
-        <module name="springcloud_00_common" />
-        <module name="springcloud_07_hystrix" />
         <module name="springcloud_08_openfeign_hystrix" />
         <module name="springcloud_09_gateway" />
         <module name="springcloud_06_category" />
-        <module name="springcloud_02_consul_client" />
         <module name="springcloud_eureka_server" />
+        <module name="springcloud_10_configserver" />
+        <module name="springcloud_00_common" />
+        <module name="springcloud_07_hystrix" />
+        <module name="springcloud_02_consul_client" />
         <module name="springcloud_03_users" />
+        <module name="springcloud_11_configclient" />
       </profile>
     </annotationProcessing>
   </component>
@@ -33,6 +35,8 @@
       <module name="springcloud_07_hystrix" options="-parameters" />
       <module name="springcloud_08_openfeign_hystrix" options="-parameters" />
       <module name="springcloud_09_gateway" options="-parameters" />
+      <module name="springcloud_10_configserver" options="-parameters" />
+      <module name="springcloud_11_configclient" options="-parameters" />
       <module name="springcloud_eureka_server" options="-parameters" />
       <module name="springcloud_parent" options="-parameters" />
     </option>

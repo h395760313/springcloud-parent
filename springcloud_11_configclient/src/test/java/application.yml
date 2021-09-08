@@ -1,0 +1,11 @@
+server:
+  port: 8849
+spring:
+  application:
+    name: CONFIG-CLIENT
+  profiles:
+    active: dev
+  cloud:
+    consul:
+      port: 8500
+      host: localhost

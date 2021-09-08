@@ -7,13 +7,35 @@ spring:
     consul:
       port: 8500
       host: localhost
-#    gateway:
-#      routes:
-#        - id: category-router  # 路由对象唯一标识
+    gateway:
+      routes:
+        - id: category-router  # 路由对象唯一标识
 #          uri: http://localhost:8807  # 服务地址
-#          predicates:  # 断言 配置路由规则
-#            - Path=/category/**
-#        - id: product-router
+          uri: lb://CATEGORY
+          predicates:  # 断言 配置路由规则
+            - Path=/category/**
+          filters:
+            - StripPrefix=1
+        - id: product-router
 #          uri: http://localhost:8808
-#          predicates:
-#            - Path=/product/**
+          uri: lb://PRODUCT
+          predicates:
+            - Path=/product/**
+#            - After=2021-09-08T15:22:17.590+08:00[Asia/Shanghai]
+#            - Before=2021-09-08T15:22:17.590+08:00[Asia/Shanghai]
+#            - Between=2021-09-08T15:22:17.590+08:00[Asia/Shanghai],2021-09-08T15:23:17.590+08:00[Asia/Shanghai]
+#            - Cookie=name,xiehongyu
+#            - Cookie=name,[A-Za-z0-9]+
+#            - Header=X-Request-Id,\d+
+#            - Method=GET
+          filters:
+            - AddRequestHeader=User-Name,xiehongyu
+            - AddRequestParameter=color,blue
+            - AddResponseHeader=X-response-Red,blue
+#            - PrefixPath=/product
+            - StripPrefix=1
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

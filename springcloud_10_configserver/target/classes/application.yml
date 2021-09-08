@@ -1,0 +1,14 @@
+server:
+  port: 8848
+spring:
+  application:
+    name: CONFIG-SERVER
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+    config:
+      server:
+        git:
+          uri: https://github.com/h395760313/configs.git  # 远程仓库地址
+          default-label: main # 远程仓库分支
