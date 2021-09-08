@@ -457,7 +457,7 @@ public String test2(@RequestBody Product product){...}
 # 指定修改某个服务调用超时时间
 feign:
   client:
-    config:
+    com.xiehongyu.config:
       # PRODUCT: # 指定服务器
       default: # 所有服务器
         connectTimeout: 5000 # 配置服务器连接超时时间
@@ -468,7 +468,7 @@ feign:
 # 修改所有服务调用超时时间
 feign:
   client:
-    config:
+    com.xiehongyu.config:
       PRODUCT: # 指定服务器
       # default: # 所有服务器
         connectTimeout: 5000 # 配置服务器连接超时时间
@@ -509,7 +509,7 @@ OpenFeign每个客户端提供一个日志对象
 ```yml
 feign:
   client:
-    config:
+    com.xiehongyu.config:
       # PRODUCT: # 指定服务器
       default: # 所有服务器
         loggerLevel: FULL
@@ -729,6 +729,8 @@ Gateway = 路由转发(router) + 请求过滤(filter)
 
 2. 编写配置文件
 
+> 通过配置文件配置网关路由
+
 ```yml
 server:
   port: 7979
@@ -750,5 +752,22 @@ spring:
           predicates: 
             - Path=/product/**
 
+```
+
+> 通过Java代码配置网关路由  Java配置优先于配置文件
+
+```java
+@Configuration
+public class GatewayConfig {
+    @Bean
+    public RouteLocator customRouteLocator(RouteLocatorBuilder builder){
+        return builder.routes()
+                .route("category_router",
+                       r -> r.path("/category/**").uri("http://localhost:8807"))
+                .route("product_router",
+                       r -> r.path("/product/**").uri("http://localhost:8806"))
+                .build();
+    }
+}
 ```
 
