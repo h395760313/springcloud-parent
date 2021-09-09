@@ -908,6 +908,8 @@ management:
 
 #### Config组件的使用
 
+##### Config Server
+
 1. 引入config server 依赖
 
 ```xml
@@ -943,5 +945,36 @@ spring:
 @EnableDiscoveryClient
 @EnableConfigServer
 public class ConfigServerApplication {...}
+```
+
+##### Config Client
+
+1. 引入 Config Client 依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-config-client</artifactId>
+</dependency>
+```
+
+2. 将自身配置交给远端git仓库管理
+3. 编写配置文件
+
+**配置文件名必须修改为bootstrap.yml或bootstrap.properties，会在启动时预先拉取配置信息到本地，然后以获取的配置信息启动**
+
+```yml
+spring:
+  cloud:
+    config:
+      discovery:
+        enabled: true # 告诉当前configclient统一配置中心在注册中心的服务id
+        service-id: CONFIG-SERVER # 告诉当前configclient根据服务id去注册中心获取
+      label: main # 1.确定分支
+      name: configclient # 2.确认文件名
+      profile: prod # 3.确定环境
+    consul: # 需要注册到注册中心，才能通过注册中心通过已注册的Service-id找到对应的微服务地址进行拉取配置
+      port: 8500
+      host: localhost
 ```
 
