@@ -148,9 +148,7 @@ eureka:
 > @EnableEurekaClient   -- 开启eureka客户端
 
 ```java
-@SpringBootApplication
-@EnableEurekaClient
-public class EurekaClientApplication {...}
+@SpringBootApplication@EnableEurekaClientpublic class EurekaClientApplication {...}
 ```
 
 ####  Eureka 自我保护机制
@@ -158,26 +156,19 @@ public class EurekaClientApplication {...}
 1. 自我保护机制
 
 ```markdown
-- 官网地址 https://github.com/Netflix/eureka/wiki/Server-Self-Preservation-Mode
-- 默认情况下，如果Eureka Server在一定时间内(默认90秒)没有收到某个微服务实例的心跳，Eureka Server将会移除该实例。但是当网络分区故障发生时，微服务于Eureka Server之间无法正常通信，而微服务本身是正常运行的，此时不应该移除这个微服务，所以引入了自我保护机制。Eureka Server在运行期间回去统计心跳失败比例在15分钟内是否低于80%，如果低于85%，Eureka Server会将这些实例保护起来，让这些实例不会过期。这种设计的哲学原理就是“宁可信其有，不可信其无”。自我保护模式正式一种针对网络异常波动的安全保护措施，使用自我保护模式能使Eureka集群更加健壮、稳定的使用。
+- 官网地址 https://github.com/Netflix/eureka/wiki/Server-Self-Preservation-Mode- 默认情况下，如果Eureka Server在一定时间内(默认90秒)没有收到某个微服务实例的心跳，Eureka Server将会移除该实例。但是当网络分区故障发生时，微服务于Eureka Server之间无法正常通信，而微服务本身是正常运行的，此时不应该移除这个微服务，所以引入了自我保护机制。Eureka Server在运行期间回去统计心跳失败比例在15分钟内是否低于80%，如果低于85%，Eureka Server会将这些实例保护起来，让这些实例不会过期。这种设计的哲学原理就是“宁可信其有，不可信其无”。自我保护模式正式一种针对网络异常波动的安全保护措施，使用自我保护模式能使Eureka集群更加健壮、稳定的使用。
 ```
 
 2. 关闭自我保护(<span style="color:red">官方不推荐关闭</span>)
 
 ```yml
-eureka:
-  server:
-    enable-self-preservation: false # 关闭自我保护
-    eviction-interval-timer-in-ms: 3000 # 超时3s自动清除
+eureka:  server:    enable-self-preservation: false # 关闭自我保护    eviction-interval-timer-in-ms: 3000 # 超时3s自动清除
 ```
 
 3. 微服务修改减短服务心跳的时间
 
 ```yml
-eureka:
-  instance:
-    lease-expiration-duration-in-seconds: 10 # 用来修改Eureka Server默认接受心跳的最大时间 默认为90s
-    lease-renewal-interval-in-seconds: 5 # 指定客户端多久想Eureka Server发一次心跳 默认为30s
+eureka:  instance:    lease-expiration-duration-in-seconds: 10 # 用来修改Eureka Server默认接受心跳的最大时间 默认为90s    lease-renewal-interval-in-seconds: 5 # 指定客户端多久想Eureka Server发一次心跳 默认为30s
 ```
 
 ###  Consul
@@ -189,15 +180,7 @@ eureka:
 安装：
 
 ```markdown
-下载地址：https://www.consul.io/downloads
-
-mac: 
-  brew tap hashicorp/tap
-  brew install hashicorp/tap/consul
-  
-启动：consul agent -dev
-
-ui页面：http://localhost:8500
+下载地址：https://www.consul.io/downloadsmac:   brew tap hashicorp/tap  brew install hashicorp/tap/consul  启动：consul agent -devui页面：http://localhost:8500
 ```
 
 #### 客户端开发
@@ -205,35 +188,19 @@ ui页面：http://localhost:8500
 1. 引入依赖
 
 ```xml
-<!--consul-client-->
-<dependency>
-  <groupId>org.springframework.cloud</groupId>
-  <artifactId>spring-cloud-starter-consul-discovery</artifactId>
-</dependency>
+<!--consul-client--><dependency>  <groupId>org.springframework.cloud</groupId>  <artifactId>spring-cloud-starter-consul-discovery</artifactId></dependency>
 ```
 
 2. 编写配置文件
 
 ```yml
-server:
-  port: 8802
-spring:
-  application:
-    name: CONSUL-CLIENT
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      discovery:
-        service-name: ${spring.application.name} # 指定注册当前服务的服务名称  默认：${spring.application.name}
+server:  port: 8802spring:  application:    name: CONSUL-CLIENT  cloud:    consul:      host: localhost      port: 8500      discovery:        service-name: ${spring.application.name} # 指定注册当前服务的服务名称  默认：${spring.application.name}
 ```
 
 3. 启动类注解
 
 ```java
-@SpringBootApplication
-@EnableDiscoveryClient // 作用：通用服务注册客户端注解，代表 consul client zk
-public class ConsulClientApplication {...}
+@SpringBootApplication@EnableDiscoveryClient // 作用：通用服务注册客户端注解，代表 consul client zkpublic class ConsulClientApplication {...}
 ```
 
 4. 健康检查问题
@@ -241,12 +208,7 @@ public class ConsulClientApplication {...}
 consul server 检测所有客户端心跳，但是发送心跳时client必须给予响应才能使该服务正常运行，如果没有引入健康检查依赖，则会导致健康检查不能通过，导致服务不能使用。
 
 ```xml
-<!--健康检查-->
-<!--这个包是用来做健康度监控的-->
-<dependency>
-  <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-actuator</artifactId>
-</dependency>
+<!--健康检查--><!--这个包是用来做健康度监控的--><dependency>  <groupId>org.springframework.boot</groupId>  <artifactId>spring-boot-starter-actuator</artifactId></dependency>
 ```
 
 ## 三、服务间通信
@@ -256,8 +218,7 @@ consul server 检测所有客户端心跳，但是发送心跳时client必须给
 使用Spring中的RestTemplate直接调用
 
 ```java
-RestTemplate restTemplate = new RestTemplate();
-String result = restTemplate.getForObject("http://localhost:8804/order", String.class);
+RestTemplate restTemplate = new RestTemplate();String result = restTemplate.getForObject("http://localhost:8804/order", String.class);
 ```
 
 调用服务的路径主机和服务端口直接写死在url中，无法实现负载均衡、如果提供服务的路径发生变化时不利于后续维护工作。
@@ -269,11 +230,7 @@ String result = restTemplate.getForObject("http://localhost:8804/order", String.
 1. 在服务中引入ribbon依赖
 
 ```xml
-<!--Ribbon-->
-<dependency>
-  <groupId>org.springframework.cloud</groupId>
-  <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
-</dependency>
+<!--Ribbon--><dependency>  <groupId>org.springframework.cloud</groupId>  <artifactId>spring-cloud-starter-netflix-ribbon</artifactId></dependency>
 ```
 
 注意：consul client 依赖中已经包含了ribbon
@@ -307,11 +264,7 @@ String result = restTemplate.getForObject("http://localhost:8804/order", String.
 > ​		作用：使当前方法、当前对象具有ribbon的负载均衡特性
 >
 > ```java
-> @Bean
-> @LoadBalanced
-> public RestTemplate restTemplate(){
->   return new RestTemplate();
-> }
+> @Bean@LoadBalancedpublic RestTemplate restTemplate(){return new RestTemplate();}
 > ```
 
 #### Ribbon组件实现负载均衡原理
@@ -323,16 +276,7 @@ String result = restTemplate.getForObject("http://localhost:8804/order", String.
 #### Ribbon负载均衡策略
 
 ```markdown
-- RoundRobinRule							轮询策略
-- RandomRule									随机策略
-- AvailabilityFilteringRule		可用过滤策略
-	`会先过滤由于多次访问故障而处于断路器跳闸状态的服务，还有并发的连接数量超过阈值的服务，然后对剩余的服务列表按照轮询策略进行访问
-- RetryRule										重试策略
-	`先按照RoundrobinRule的策略获取服务，如果获取失败则在指定时间内进行重试，获取可用的服务。
-- WeightedResponseTimeRule		响应时间加权策略
-	`根绝平均响应的时间计算所有服务的权重，响应时间越快服务权重越大，被选中的概率越高，刚启动时如果统计信息不足，则使用RoundRobinRule策略，等统计信息足够会切换到 WeightedResponseTimeRule
-- BestAvailableRule						最低并发策略
-	`会先过滤由于多次访问故障而处于断路器跳闸状态的服务，然后选择一个并发量最小的服务
+- RoundRobinRule							轮询策略- RandomRule									随机策略- AvailabilityFilteringRule		可用过滤策略	`会先过滤由于多次访问故障而处于断路器跳闸状态的服务，还有并发的连接数量超过阈值的服务，然后对剩余的服务列表按照轮询策略进行访问- RetryRule										重试策略	`先按照RoundrobinRule的策略获取服务，如果获取失败则在指定时间内进行重试，获取可用的服务。- WeightedResponseTimeRule		响应时间加权策略	`根绝平均响应的时间计算所有服务的权重，响应时间越快服务权重越大，被选中的概率越高，刚启动时如果统计信息不足，则使用RoundRobinRule策略，等统计信息足够会切换到 WeightedResponseTimeRule- BestAvailableRule						最低并发策略	`会先过滤由于多次访问故障而处于断路器跳闸状态的服务，然后选择一个并发量最小的服务
 ```
 
 #### 修改Ribbon负载均衡策略
@@ -342,9 +286,7 @@ String result = restTemplate.getForObject("http://localhost:8804/order", String.
 `服务id.ribbon.NFLoadBalancerRuleClassName=com.netflix.loadbalancer.RandomRule`
 
 ```yml
-ORDERS:
-  ribbon:
-    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+ORDERS:  ribbon:    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
 ```
 
 ### OpenFeign
@@ -352,53 +294,25 @@ ORDERS:
 调用方引入依赖
 
 ```xml
-<dependency>
-  <groupId>org.springframework.cloud</groupId>
-  <artifactId>spring-cloud-starter-openfeign</artifactId>
-</dependency>
+<dependency>  <groupId>org.springframework.cloud</groupId>  <artifactId>spring-cloud-starter-openfeign</artifactId></dependency>
 ```
 
 编写配置文件
 
 ```yml
-server:
-  port: 8807
-spring:
-  application:
-    name: CATEGORY
-  cloud:
-    consul:
-      port: 8500
-      host: localhost
+server:  port: 8807spring:  application:    name: CATEGORY  cloud:    consul:      port: 8500      host: localhost
 ```
 
 编写调用客户端
 
 ```java
-@FeignClient(value = "PRODUCT") //用于服务的调用
-public interface ProductClient {
-
-    @RequestMapping("/product") // 需要调用的接口
-    String product();
-
-    @RequestMapping("/list") // 需要调用的接口
-    String list();
-}
+@FeignClient(value = "PRODUCT") //用于服务的调用public interface ProductClient {    @RequestMapping("/product") // 需要调用的接口    String product();    @RequestMapping("/list") // 需要调用的接口    String list();}
 ```
 
 调用服务
 
 ```java
-@Autowired
-private ProductClient productClient;
-
-@RequestMapping("/category")
-public String category(){
-    log.info("category service ...");
-    String product = productClient.product(); // 调用服务
-    String list = productClient.list(); // 调用服务
-    return "category ok!  " + product +"   "+ list;
-}
+@Autowiredprivate ProductClient productClient;@RequestMapping("/category")public String category(){    log.info("category service ...");    String product = productClient.product(); // 调用服务    String list = productClient.list(); // 调用服务    return "category ok!  " + product +"   "+ list;}
 ```
 
 #### 服务间通信的参数传递
@@ -408,25 +322,13 @@ public String category(){
 queryString方式传递参数： ?name=xxx
 
 ```java
-// openFeign
-@GetMapping("/test")
-String test(@RequestParam("name") String name, @RequestParam("age") Integer age);
-
-// 业务接口
-@GetMapping("/test")
-public String test(@RequestParam("name") String name, @RequestParam("age") Integer age){...}
+// openFeign@GetMapping("/test")String test(@RequestParam("name") String name, @RequestParam("age") Integer age);// 业务接口@GetMapping("/test")public String test(@RequestParam("name") String name, @RequestParam("age") Integer age){...}
 ```
 
 路径传递参数：/url/xxx/yyy
 
 ```java
-// openFeign
-@GetMapping("/test1/{id}/{name}")
-String test1(@PathVariable("id") Integer id, @PathVariable("name") String name);
-
-// 业务接口
-@GetMapping("/test1/{id}/{name}")
-public String test1(@PathVariable("id") Integer id, @PathVariable("name") String name){...}
+// openFeign@GetMapping("/test1/{id}/{name}")String test1(@PathVariable("id") Integer id, @PathVariable("name") String name);// 业务接口@GetMapping("/test1/{id}/{name}")public String test1(@PathVariable("id") Integer id, @PathVariable("name") String name){...}
 ```
 
 2. 传递对象类型参数   
@@ -434,13 +336,7 @@ public String test1(@PathVariable("id") Integer id, @PathVariable("name") String
 Application/json方式：
 
 ```java
-// openFeign
-@PostMapping("/test2")
-String test2(@RequestBody Product product);
-
-// 业务接口
-@PostMapping("/test2")
-public String test2(@RequestBody Product product){...}
+// openFeign@PostMapping("/test2")String test2(@RequestBody Product product);// 业务接口@PostMapping("/test2")public String test2(@RequestBody Product product){...}
 ```
 
 #### OpenFeign超时时间
@@ -454,25 +350,11 @@ public String test2(@RequestBody Product product){...}
 2. 修改OpenFeign超时时间
 
 ```yml
-# 指定修改某个服务调用超时时间
-feign:
-  client:
-    com.xiehongyu.config:
-      # PRODUCT: # 指定服务器
-      default: # 所有服务器
-        connectTimeout: 5000 # 配置服务器连接超时时间
-        readTimeout: 5000 # 配置服务器等待超时时间
+# 指定修改某个服务调用超时时间feign:  client:    config:      # PRODUCT: # 指定服务器      default: # 所有服务器        connectTimeout: 5000 # 配置服务器连接超时时间        readTimeout: 5000 # 配置服务器等待超时时间
 ```
 
 ```yml
-# 修改所有服务调用超时时间
-feign:
-  client:
-    com.xiehongyu.config:
-      PRODUCT: # 指定服务器
-      # default: # 所有服务器
-        connectTimeout: 5000 # 配置服务器连接超时时间
-        readTimeout: 5000 # 配置服务器等待超时时间
+# 修改所有服务调用超时时间feign:  client:    config:      PRODUCT: # 指定服务器      # default: # 所有服务器        connectTimeout: 5000 # 配置服务器连接超时时间        readTimeout: 5000 # 配置服务器等待超时时间
 ```
 
 #### OpenFeign日志展示
@@ -488,12 +370,7 @@ OpenFeign是一个伪HttpClient客户端，用来帮助我们完成服务见通�
 首先设置OpenFeign日志级别
 
 ```yml
-# 展示openFeign日志
-logging:
-  level:
-    com:
-      xiehongyu:
-        openfeign: debug
+# 展示openFeign日志logging:  level:    com:      xiehongyu:        openfeign: debug
 ```
 
 OpenFeign每个客户端提供一个日志对象
@@ -507,12 +384,7 @@ OpenFeign每个客户端提供一个日志对象
 `FULL`  记录请求喝响应的header、body和元数据，也就是展示全部http协议状态
 
 ```yml
-feign:
-  client:
-    com.xiehongyu.config:
-      # PRODUCT: # 指定服务器
-      default: # 所有服务器
-        loggerLevel: FULL
+feign:  client:    config:      # PRODUCT: # 指定服务器      default: # 所有服务器        loggerLevel: FULL
 ```
 
 
@@ -524,8 +396,7 @@ feign:
 ##### 1. 服务雪崩
 
 ```markdown
-# 1.服务雪崩
-- 在微服务之间进行服务调用时由于某一个服务故障，导致级联服务故障的现象，成为雪崩效应。雪崩效应描述的是提供方不可用，导致消费芳不可用并将不可用逐渐放大的过程。
+# 1.服务雪崩- 在微服务之间进行服务调用时由于某一个服务故障，导致级联服务故障的现象，成为雪崩效应。雪崩效应描述的是提供方不可用，导致消费芳不可用并将不可用逐渐放大的过程。
 ```
 
 ServiceA   -------->    ServiceB    -------->    ServiceC
@@ -537,8 +408,7 @@ ServiceA   -------->    ServiceB    -------->    ServiceC
 ##### 2. 服务熔断
 
 ```markdown
-# 服务熔断
-- “熔断器”本身是一种开关装置，当某个服务单元发生故障之后，通过断路器(Hystrix)的故障监控，某个异常条件被触发，直接熔断整个服务。向调用方返回一个符合预期的、可处理的被选响应(FallBack)，而不是长时间的等待活着抛出调用方法无法处理的异常，就保证了服务调用方的县城不会被长时间占用，避免故障在分布式系统中蔓延，乃至雪崩。如果目标服务情况好转则恢复调用。服务熔断是解决服务雪崩的重要手段。
+# 服务熔断- “熔断器”本身是一种开关装置，当某个服务单元发生故障之后，通过断路器(Hystrix)的故障监控，某个异常条件被触发，直接熔断整个服务。向调用方返回一个符合预期的、可处理的被选响应(FallBack)，而不是长时间的等待活着抛出调用方法无法处理的异常，就保证了服务调用方的县城不会被长时间占用，避免故障在分布式系统中蔓延，乃至雪崩。如果目标服务情况好转则恢复调用。服务熔断是解决服务雪崩的重要手段。
 ```
 
 
@@ -546,27 +416,13 @@ ServiceA   -------->    ServiceB    -------->    ServiceC
 ##### 3. 服务降级
 
 ```markdown
-# 服务降级说明
-- 服务压力剧增的时候根据当前的业务情况及流量对一些服务和页面有策略的降级，以此缓解服务器的压力，以保证核心任务的进行。同事保证部分甚至大部分任务客户能得到正确的响应。也就是当前的请求处理不了了或出错了，给一个默认的返回。
-
-- 服务降级：关闭微服务系统中某些边缘服务，保证系统核心服务正常运行
+# 服务降级说明- 服务压力剧增的时候根据当前的业务情况及流量对一些服务和页面有策略的降级，以此缓解服务器的压力，以保证核心任务的进行。同事保证部分甚至大部分任务客户能得到正确的响应。也就是当前的请求处理不了了或出错了，给一个默认的返回。- 服务降级：关闭微服务系统中某些边缘服务，保证系统核心服务正常运行
 ```
 
 ##### 4. 降级和熔断总结
 
 ```markdown
-# 1.共同点
-- 目标很一致，都是从可用性可靠性着想，为防止系统的整体缓慢甚至崩溃，采用的技术手段；
-- 最终表现类，对于二者来说，最终让用户体验到的是某些功能暂时不可达或不可用；
-- 粒度一般都是服务级别，当然，业界也有不少更细粒度的做法，比如做到数据持久层(允许查询，不允许增删改)；
-- 自治性要求很高，熔断模式一般都是服务基于策略的自动触发，降级虽说可人工干预，但在微服务架构下，完全靠人显然不可能，开关预置、配置中心都是必要手段；sentinel
-
-# 2.不同点
-- 出发原因不太一样，服务熔断一般是某个服务（下游服务）故障引起，而服务降级一般是从整体负荷考虑；
-- 管理目标的层次不太一样，熔断其实是一个框架及的处理，每个微服务都需要（无层级之分），而降级一般需要对业务有层级之分（比如降级一般是从最外围服务边缘服务开始）
-
-# 3.总结
-- 熔断必会触发降级，所以熔断也是降级的一种，区别在于熔断是对调用链路的保护，而降级是对系统过载的一种保护处理
+# 1.共同点- 目标很一致，都是从可用性可靠性着想，为防止系统的整体缓慢甚至崩溃，采用的技术手段；- 最终表现类，对于二者来说，最终让用户体验到的是某些功能暂时不可达或不可用；- 粒度一般都是服务级别，当然，业界也有不少更细粒度的做法，比如做到数据持久层(允许查询，不允许增删改)；- 自治性要求很高，熔断模式一般都是服务基于策略的自动触发，降级虽说可人工干预，但在微服务架构下，完全靠人显然不可能，开关预置、配置中心都是必要手段；sentinel# 2.不同点- 出发原因不太一样，服务熔断一般是某个服务（下游服务）故障引起，而服务降级一般是从整体负荷考虑；- 管理目标的层次不太一样，熔断其实是一个框架及的处理，每个微服务都需要（无层级之分），而降级一般需要对业务有层级之分（比如降级一般是从最外围服务边缘服务开始）# 3.总结- 熔断必会触发降级，所以熔断也是降级的一种，区别在于熔断是对调用链路的保护，而降级是对系统过载的一种保护处理
 ```
 
 ##### 5. 服务熔断的实现
@@ -574,37 +430,19 @@ ServiceA   -------->    ServiceB    -------->    ServiceC
 1. 引入Hystrix依赖
 
 ```xml
-<dependency>
-  <groupId>org.springframework.cloud</groupId>
-  <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
-</dependency>
+<dependency>  <groupId>org.springframework.cloud</groupId>  <artifactId>spring-cloud-starter-netflix-hystrix</artifactId></dependency>
 ```
 
 2. 启动类开启熔断功能
 
 ```java
-@SpringBootApplication
-@EnableDiscoveryClient
-@EnableCircuitBreaker // 开启Hystrix服务熔断
-public class HystrixApplication {...}
+@SpringBootApplication@EnableDiscoveryClient@EnableCircuitBreaker // 开启Hystrix服务熔断public class HystrixApplication {...}
 ```
 
 3. 在控制器方法中加入备选处理
 
 ```java
-@GetMapping("hystrix")
-@HystrixCommand(fallbackMethod = "demoFallback")
-public String hystrix(Integer id){
-    System.out.println("hystrix demo");
-    if (id <= 0) {
-        throw new RuntimeException("无效ID！");
-    }
-    return "hystrix ok!!!";
-}
-
-public String demoFallback(Integer id){
-    return "当前活动过于火爆，服务已经熔断了！";
-}
+@GetMapping("hystrix")@HystrixCommand(fallbackMethod = "demoFallback")public String hystrix(Integer id){    System.out.println("hystrix demo");    if (id <= 0) {        throw new RuntimeException("无效ID！");    }    return "hystrix ok!!!";}public String demoFallback(Integer id){    return "当前活动过于火爆，服务已经熔断了！";}
 ```
 
 4. Hystrix断路器打开条件
@@ -622,11 +460,7 @@ public String demoFallback(Integer id){
 6. 在实战过程中断路器使用
 
 ```markdown
-# a.为每一个调用接口提供自定义备选处理
-- @HystrixCommand(fallbackMethod = "demoFallback")   // 熔断之后处理fallbackMethod 书写快速失败方法名
-
-# b. 使用Hystrix提供默认备选处理
-- @HystrixCommand(defaultFallback = "默认处理方法名")
+# a.为每一个调用接口提供自定义备选处理- @HystrixCommand(fallbackMethod = "demoFallback")   // 熔断之后处理fallbackMethod 书写快速失败方法名# b. 使用Hystrix提供默认备选处理- @HystrixCommand(defaultFallback = "默认处理方法名")
 ```
 
 
@@ -644,42 +478,19 @@ openfeign组件底层自动依赖Hystrix，项目无须引入
 2. 开启openfeign对Hystrix支持
 
 ```yml
-feign:
-  hystrix:
-    enabled: true # 开启openfeign在调用服务过程中 开启hystrix支持 默认没有开启
+feign:  hystrix:    enabled: true # 开启openfeign在调用服务过程中 开启hystrix支持 默认没有开启
 ```
 
 3. 开发openfeign服务调用失败默认处理的实现类
 
 ```java
-/**
- * @Description: 自定义HystrixClient默认备选处理
- * @Author: xiehongyu
- * @Date: 2021/9/7 15:43
- */
-@Component
-public class HystrixClientFallback implements HystrixClient{
-
-    @Override
-    public String hystrix(Integer id){
-        return "当前服务不可用，请稍后再试! id:" + id;
-    }
-}
+/** * @Description: 自定义HystrixClient默认备选处理 * @Author: xiehongyu * @Date: 2021/9/7 15:43 */@Componentpublic class HystrixClientFallback implements HystrixClient{    @Override    public String hystrix(Integer id){        return "当前服务不可用，请稍后再试! id:" + id;    }}
 ```
 
 4. 在openfeign客户端接口中的@FeignClients(value="服务id", fallback=默认处理.class)
 
 ```java
-/**
- * @Description: openfeign客户端
- * @Author: xiehongyu
- * @Date: 2021/9/7 15:43
- */
-@FeignClient(value = "HYSTRIX", fallback = HystrixClientFallback.class)
-public interface HystrixClient {
-    @GetMapping("hystrix")
-    String hystrix(@RequestParam("id") Integer id);
-}
+/** * @Description: openfeign客户端 * @Author: xiehongyu * @Date: 2021/9/7 15:43 */@FeignClient(value = "HYSTRIX", fallback = HystrixClientFallback.class)public interface HystrixClient {    @GetMapping("hystrix")    String hystrix(@RequestParam("id") Integer id);}
 ```
 
 5. 当调用服务不可用时，直接会执行自定义默认处理
@@ -729,8 +540,6 @@ Gateway = 路由转发(router) + 请求过滤(filter)
 
 2. 编写配置文件
 
-> 通过配置文件配置网关路由
-
 ```yml
 server:
   port: 7979
@@ -754,163 +563,19 @@ spring:
 
 ```
 
-> 通过Java代码配置网关路由  Java配置优先于配置文件
-
-```java
-@Configuration
-public class GatewayConfig {
-    @Bean
-    public RouteLocator customRouteLocator(RouteLocatorBuilder builder){
-        return builder.routes()
-                .route("category_router",
-                       r -> r.path("/category/**").uri("http://localhost:8807"))
-                .route("product_router",
-                       r -> r.path("/product/**").uri("http://localhost:8806"))
-                .build();
-    }
-}
-```
-
-#### Gateway实现负载均衡
-
-```yml
-server:
-  port: 7979
-spring:
-  application:
-    name: GATEWAY
-  cloud:
-    consul:
-      port: 8500
-      host: localhost
-    gateway:
-      routes:
-        - id: category-router  # 路由对象唯一标识
-#          uri: http://localhost:8807  # 服务地址
-          uri: lb://CATEGORY
-          predicates:  # 断言 配置路由规则
-            - Path=/category/**
-        - id: product-router
-#          uri: http://localhost:8808
-          uri: lb://PRODUCT
-          predicates:
-            - Path=/product/**
-```
-
-#### Gateway的断言和过滤
-
-Gateway = 断言 predicate + 过滤(后置filter)
-
-断言：当请求到达网关时，网关前置处理。满足断言放行请求，不满足立即返回。
-
-过滤：当请求满足断言的所有条件之后，会向后端服务转发，在向后端服务转发之前会经过一些过滤。
-
-##### 网关断言的使用 
-
-Route Predicate Factories
-
-```
-- Path=/product/**		路径断言
-- After=2021-09-08T15:22:17.590+08:00[Asia/Shanghai]		该路由规则必须在指定时间之后有效
-- Before=2021-09-08T15:22:17.590+08:00[Asia/Shanghai]		该路由规则必须在指定时间之前有效，过了失效
-- Between=2021-09-08T15:22:17.590+08:00[Asia/Shanghai],2021-09-08T15:23:17.590+08:00[Asia/Shanghai]		该路由规则在某个时间段内有效
-- Cookie=name,xiehongyu		携带指定cookie请求才能访问，指定key、value
-- Cookie=name,[A-Za-z0-9]+	指定key，value使用正则
-- Header=X-Request-Id,\d+		请求必须包含指定请求头才有效
-- Method=GET		限定指定请求方式才可用
-```
-
-##### 网关过滤的使用
-
-GatewayFilter Factories
-
-1. 内置filter
-
-```
-AddRequestHeader Filter					用来给路由对象的所有转发请求加入指定请求头信息
-- AddRequestHeader=User-Name,xiehongyu
-AddRequestParameter							用来给路由对象的所有转发请求加入指定请求参数
-- AddRequestParameter=color,blue
-AddResponseHeader Filter 				用来给路由对象的所有转发请求的响应加入指定头信息
-- AddResponseHeader=X-response-Red,blue
-PrefixPath Filter 							用来给路由对象的所有转发请求的url加入指定前缀信息
-如： 浏览器访问网关地址:/list  前缀路径/mypath   转发到后端服务地址为：uri+前缀路径+地址栏路径-> uri+/mypath/list
-- PrefixPath=/product
-StripPrefix Filter 							用来给路由对象的所有转发请求的url去掉指定n个前缀
-如：浏览器访问网关地址:/product/list  StripPrefix=1 -> /list   后端接口：/list
-- StripPrefix=1
-```
-
-2. 自动移全局filter  所有请求都要经过全局filter再转发到后端服务
-
-```java
-/**
- * @Description: 自定义网关全局Filter
- * @Author: xiehongyu
- * @Date: 2021/9/8 16:17
- */
-@Configuration
-public class CustomerGlobalFilter implements GlobalFilter, Ordered {
-    /**
-     * 类似javaWeb的 doFilter
-     * @param exchange 交换，封装了request、response
-     * @param chain
-     * @return
-     */
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 相当于httpServletRequest
-        ServerHttpRequest request = exchange.getRequest();
-        // 相当于httpServletResponse
-        ServerHttpResponse response = exchange.getResponse();
-        System.out.println("经过全局Filter处理。。。");
-        Mono<Void> filter = chain.filter(exchange);
-        System.out.println("响应回来Filter处理。。。");
-        return filter;
-    }
-
-    /**
-     * order 排序
-     * @return 用来指定filter执行顺序，默认顺序按照自然数字进行排序  -1 在所有filter之前执行
-     */
-    @Override
-    public int getOrder() {
-        return -1;
-    }
-}
-```
-
-3. 通过网关提供web路径查看路由详细规则
-
-http://localhost:7979/actuator/gateway/routes
-
-查看网关路由规则详细路径必须在网关配置文件中暴露当前路径
-
-```yml
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-```
-
-
-
 ### Config
 
-#### 什么是Config
+统一配置中心
 
-> config(配置)又称为 统一配置中心，顾名思义就是将配置统一管理，配置统一管理的好处是大规模集群部署服务应用时相同的服务配置一致，日后再修改配置只需要统一修改全部同步，不需要一个一个服务手动维护。
+作用：用来实现微服务系统中服务配置统一管理组件   netflix config ===>  spring config
 
-统一配置中心组件流程图
+组件：统一配置中心服务端（集中管理配置文件）、统一配置中心客户端client
 
-![image-20210908170208485](/Users/xiehongyu/IdeaProject/springcloud_parent/images/image-20210908170208485.png)
-
-#### Config组件的使用
+#### Config 组件使用
 
 ##### Config Server
 
-1. 引入config server 依赖
+1. 引入Config Server 依赖
 
 ```xml
 <dependency>
@@ -919,7 +584,7 @@ management:
 </dependency>
 ```
 
-2. 添加配置
+2. 编写配置文件
 
 ```yml
 server:
@@ -935,10 +600,10 @@ spring:
       server:
         git:
           uri: https://github.com/h395760313/configs.git  # 远程仓库地址
-          default-label: master # 远程仓库分支
+          default-label: main # 远程仓库分支
 ```
 
-3. 启动类加入注解，开启统一配置中心
+3. 启动类添加注解
 
 ```java
 @SpringBootApplication
@@ -949,19 +614,18 @@ public class ConfigServerApplication {...}
 
 ##### Config Client
 
-1. 引入 Config Client 依赖
+1. 加入Config Client依赖
 
 ```xml
 <dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-config-client</artifactId>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-config-client</artifactId>
 </dependency>
 ```
 
-2. 将自身配置交给远端git仓库管理
-3. 编写配置文件
+2. 编写配置文件
 
-**配置文件名必须修改为bootstrap.yml或bootstrap.properties，会在启动时预先拉取配置信息到本地，然后以获取的配置信息启动**
+**文件名必须使用bootstrap.yml 或 bootstrap.properties, 在启动时预先拉取远端配置信息到本地，然后以获取的配置信息启动**
 
 ```yml
 spring:
@@ -973,8 +637,36 @@ spring:
       label: main # 1.确定分支
       name: configclient # 2.确认文件名
       profile: prod # 3.确定环境
-    consul: # 需要注册到注册中心，才能通过注册中心通过已注册的Service-id找到对应的微服务地址进行拉取配置
+    consul:
       port: 8500
       host: localhost
+```
+
+#### 手动配置刷新
+
+当远端git仓库中配置发生变化时，不需要重启微服务就可以直接读取远端修改之后的配置信息。
+
+##### 当前项目支持手动配置刷新
+
+1. 在controller中加入`@RefreshScope`注解
+
+```java
+@RestController
+@RefreshScope // 作用：用来在不需要重启微服务的情况下，将当前scope域中信息刷新为最新配置信息
+public class ConfigClientController {...}
+```
+
+2. 修改完远端git仓库配置文件之后，向每一个微服务发送一个post请求
+
+> curl -X POST http://8849/actuator/refresh
+
+3. 必须在微服务配置文件中暴露远端配置刷新端点(endpoint)
+
+```yml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # 开启所有web 端点暴露
 ```
 

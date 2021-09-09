@@ -4,10 +4,14 @@ spring:
       discovery:
         enabled: true # 告诉当前configclient统一配置中心在注册中心的服务id
         service-id: CONFIG-SERVER # 告诉当前configclient根据服务id去注册中心获取
-      label: main # 1.确定分支
+      label: master # 1.确定分支
       name: configclient # 2.确认文件名
-      profile: prod # 3.确定环境
+      profile: dev # 3.确定环境
     consul:
       port: 8500
       host: localhost
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # 开启所有web 端点暴露

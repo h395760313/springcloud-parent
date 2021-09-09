@@ -10,5 +10,5 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/h395760313/configs.git  # 远程仓库地址
-          default-label: main # 远程仓库分支
+          uri: https://gitee.com/clarence_x/configs.git  # 远程仓库地址
+          default-label: master # 远程仓库分支
