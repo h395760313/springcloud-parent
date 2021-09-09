@@ -670,3 +670,250 @@ management:
         include: "*" # 开启所有web 端点暴露
 ```
 
+### Bus
+
+> Spring Cloud Bus links nodes of a distributed system with a lightweight message broker.
+
+springcloud bus 利用轻量级消息中间件将分布式系统中所有服务连接到一起
+
+作用：利用Bus广播特性，当一个状态(配置文件)发生改变时，通知到bus中所有服务节点更新当前状态(更新自身配置)
+
+原理
+
+![image-20210909170444054](/Users/xiehongyu/IdeaProject/springcloud_parent/images/image-20210909170444054.png)
+
+#### 利用SpringcloudBus 实现远端配置修改自动更新
+
+1. 准备RabbitMQ服务
+
+2. 配置统一配置中心通过Bus连接到MQ服务
+
+   1. 引入bug依赖
+
+   ```xml
+   <dependency>
+     <groupId>org.springframework.cloud</groupId>
+     <artifactId>spring-cloud-starter-bus-amqp</artifactId>
+   </dependency>
+   ```
+
+   2. 编写配置文件
+
+   ```yml
+   rabbitmq:
+     host: localhost
+     port: 5672
+     username: guest
+     password: guest
+   ```
+
+   3. 重启config server
+
+3. 配置微服务（config client）通过bug连接MQ服务
+
+   1. 在所有微服务项目中引入bus服务
+
+   ```xml
+   <dependency>
+     <groupId>org.springframework.cloud</groupId>
+     <artifactId>spring-cloud-starter-bus-amqp</artifactId>
+   </dependency>
+   ```
+
+   2. 在所有微服务项目中配置MQ链接配置，主要这段配置要放入远端仓库管理
+
+   ```yml
+   rabbitmq:
+     host: localhost
+     port: 5672
+     username: guest
+     password: guest
+   ```
+
+   3. 在引入bus依赖之后，重启所有微服务时出现如下错误
+
+   ```java
+   ***************************
+   APPLICATION FAILED TO START
+   ***************************
+   
+   Description:
+   
+   A component required a bean named 'configServerRetryInterceptor' that could not be found.
+   
+   
+   Action:
+   
+   Consider defining a bean named 'configServerRetryInterceptor' in your configuration.
+   ```
+
+   错误原因：引入bus依赖启动立即根据配置文件bus配置连接MQ服务器，但是此时MQ配置信息都在远端，因此bus连接不到MQ，阻止了应用启动
+
+   解决方案：允许项目启动时bus组件立即连接MQ这个失败，因为获取远端配置之后可以再以远端配置初始化bus组件，添加如下配置即可
+
+   ```yml
+   spring:
+     cloud:
+       config:
+         fail-fast: true # 代表在启动时还没有拉取远端配置完成时的失败都是允许的
+   ```
+
+   4. 通过向config server 统一配置中心发送POST请求实现自动配置刷新
+
+   注意：/actuator/bus-refresh 必须在config server 中暴露： 
+
+   ```yml
+   management:
+     endpoints:
+       web:
+         exposure:
+           include: "*" # 开启所有web 端点暴露
+   ```
+
+   > 刷新所有服务：curl -X POST "http://localhost:8848(configserverAddress)/actuator/bus-refresh"
+   >
+   > 刷新指定服务：curl -X POST "http://localhost:8848(configserverAddress)/actuator/bus-refresh/服务id"
+
+#### 利用git中 webhooks(web 钩子)
+
+1. 钩子hooks
+
+根据仓库触发事件执行对应操作
+
+2. webhooks
+
+根据远程仓库触发对应事件发送一个web请求，这个请求默认就是POST请求方式
+
+3. 在远端仓库中配置webhooks
+   1. 添加webhooks
+
+4. 首次配置完成后，会出现400错误，需要在configServer中加入filter配置
+
+```java
+package com.xiehongyu.filters;
+ 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Component;
+ 
+/**
+ * 过滤器
+ */
+@Component
+public class UrlFilter implements Filter {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+
+        String url = new String(httpServletRequest.getRequestURI());
+
+        //只过滤/actuator/bus-refresh请求
+        if (!url.endsWith("/actuator/bus-refresh")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        //获取原始的body
+        String body = readAsChars(httpServletRequest);
+
+        System.out.println("original body:   " + body);
+
+        //使用HttpServletRequest包装原始请求达到修改post请求中body内容的目的
+        CustometRequestWrapper requestWrapper = new CustometRequestWrapper(httpServletRequest);
+
+        chain.doFilter(requestWrapper, response);
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    private class CustometRequestWrapper extends HttpServletRequestWrapper {
+        public CustometRequestWrapper(HttpServletRequest request) {
+            super(request);
+        }
+
+        @Override
+        public ServletInputStream getInputStream() throws IOException {
+            byte[] bytes = new byte[0];
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+
+            return new ServletInputStream() {
+                @Override
+                public boolean isFinished() {
+                    return byteArrayInputStream.read() == -1 ? true : false;
+                }
+
+                @Override
+                public boolean isReady() {
+                    return false;
+                }
+
+                @Override
+                public void setReadListener(ReadListener readListener) {
+
+                }
+
+                @Override
+                public int read() throws IOException {
+                    return byteArrayInputStream.read();
+                }
+            };
+        }
+    }
+
+    public static String readAsChars(HttpServletRequest request) {
+
+        BufferedReader br = null;
+        StringBuilder sb = new StringBuilder("");
+        try {
+            br = request.getReader();
+            String str;
+            while ((str = br.readLine()) != null) {
+                sb.append(str);
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (null != br) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return sb.toString();
+    }
+}
+
+
+```
+
+在启动类加如下注解，包名指向filter位置
+
+```java
+@ServletComponentScan(basePackages = "com.xiehongyu.filters")
+```
+

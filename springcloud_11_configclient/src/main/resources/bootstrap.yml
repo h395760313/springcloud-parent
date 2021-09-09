@@ -7,6 +7,7 @@ spring:
       label: master # 1.确定分支
       name: configclient # 2.确认文件名
       profile: dev # 3.确定环境
+      fail-fast: true
     consul:
       port: 8500
       host: localhost
@@ -15,3 +16,9 @@ management:
     web:
       exposure:
         include: "*" # 开启所有web 端点暴露
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  virtual-host: /

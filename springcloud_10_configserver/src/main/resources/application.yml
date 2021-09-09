@@ -12,3 +12,14 @@ spring:
         git:
           uri: https://gitee.com/clarence_x/configs.git  # 远程仓库地址
           default-label: master # 远程仓库分支
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  virtual-host: /
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # 开启所有web 端点暴露
