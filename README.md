@@ -917,3 +917,251 @@ public class UrlFilter implements Filter {
 @ServletComponentScan(basePackages = "com.xiehongyu.filters")
 ```
 
+### SpringCloud总结
+
+![image-20210910094927180](/Users/xiehongyu/IdeaProject/springcloud_parent/images/image-20210910094927180.png)
+
+## SpringCloud Alibaba
+
+![image-20210910100514388](/Users/xiehongyu/IdeaProject/springcloud_parent/images/image-20210910100514388.png)
+
+### Nacos
+
+Nacos组件  Name Service(服务注册中心)  Configuration Service（配置中心）
+
+Nacos = Name + Configuration + Service
+
+​			= Na       + Co                     +S
+
+作用：服务注册中心、统一配置中心
+
+#### Nacos的安装和配置
+
+> 官网地址：https://nacos.io/zh-cn/
+
+> github地址：https://github.com/alibaba/nacos
+
+>下载地址：https://github.com/alibaba/nacos/releases
+
+##### 启动Nacos
+
+默认nacos启动以集群模式启动，必须满足多个节点
+
+单机启动：sh bin/start.sh -m standalone
+
+集群启动：sh bin/startup.sh -p embedded
+
+查看日志：tail -f logs/nacos.log
+
+##### 访问Nacos Web地址
+
+http://localhost:8848/nacos
+
+默认用户名和密码都是 nacos
+
+#### Nacos Client开发
+
+1. 引入依赖
+
+```xml
+<dependency>
+  <groupId>com.alibaba.cloud</groupId>
+  <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+```
+
+2. 编写配置
+
+```yml
+server:
+  port: 8081
+spring:
+  application:
+    name: NACOSCLIENT
+  cloud:
+    nacos:
+      server-addr: localhost:8848 # nacos server 总地址 包括注册与配置
+      discovery:
+        server-addr: ${spring.cloud.nacos.server-addr} # 注册nacos server 地址 默认为${spring.cloud.nacos.server-addr}
+        service: ${spring.application.name} # 指定向nacos server注册服务名称 默认为${spring.application.name}
+```
+
+#### Nacos Config
+
+Nacos 作为统一配置中心：
+
+1. 管理配置文件方式是在自己坐在服务器上形成一个版本库，因此不需要再创建远程版本库
+2. Nacos作为统一配置中心管理配置文件时，同样也是存在版本控制
+
+##### Nacos Config 开发
+
+1. 将自身配置交给Nacos管理
+
+![image-20210910152444862](/Users/xiehongyu/IdeaProject/springcloud_parent/images/image-20210910152444862.png)
+
+2. 引入Nacos Config Client依赖
+
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+</dependency>
+```
+
+3. 编写配置  要预先拉取远程配置，必须使用bootstrap.yml或者bootstrap.properties
+
+```yml
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848 #config server 地址
+        group: DEFAULT_GROUP # 从哪个组获取配置
+        name: configclient-dev # 从这个组中获取哪个配置文件
+        file-extension: yml # 配置文件的后缀名
+```
+
+4. 在控制器加入刷新注解
+
+```java
+@RestController
+@RefreshScope
+public class DemoController {...}
+```
+
+##### Nacos Config 细节
+
+1. dataId细节： 代表完整配置文件名称 ===> spring.cloud.nacos.config.name
+
+   ​						完整配置文件名称 = 前缀(prefix) + 环境(env) + 后缀(file-extension)
+
+dataId = spring.cloud.nacos.config.name + spring.cloud.nacos.config.file-extension
+
+dataId = ${prefix} + ${spring.profile.active}.${file-extension}
+
+2. 微服务拉取配置
+
+   a. 第一种获取方式
+
+```yml
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848 #config server 地址
+        group: DEFAULT_GROUP # 从哪个组获取配置
+        # 第一种 根据文件名(name) + 后缀(extension) 获取远程配置
+        name: configclient-dev # 从这个组中获取哪个配置文件
+        file-extension: yml # 配置文件的后缀名
+```
+
+
+
+​		b. 第二种获取方式
+
+```yml
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848 #config server 地址
+        group: DEFAULT_GROUP # 从哪个组获取配置
+        # 第二种 根据 前缀(prefix) + 环境(env) + 后缀(file-extension) 获取远程配置
+        prefix: configclient # 前缀(prefix)
+        file-extension: yml # 后缀(extension)
+  profiles:
+    active: dev # 环境(env)
+```
+
+3. 统一配置中心 nacos 三个重要概念
+
+> 命名空间：namespace 默认nacos安装按成之后会有一个默认命名空间，这个命名空间名字为public。
+>
+> ​		作用：站在项目的角度隔离每一个项目配置文件
+
+> 组：group  默认nacos中在管理配置文件时不指定group时默认的组名称为DEFAULT_GROUP
+>
+> ​		作用： 站在项目中每个服务角度，隔离同一个项目中不同服务的配置
+
+> 文件名： dataId  获取一个配置文件唯一标识
+
+配置迁移可导入导出
+
+在历史版本可回退配置版本
+
+#### Nacos 持久化
+
+持久化： 管理的配置信息持久化
+
+注意：默认nacos存在配置信息持久化，默认的持久化方式为内嵌数据库derby
+
+缺点：无法友好的展示数据
+
+官方建议：在生产情况下推荐将配置存入mysql数据库 注意：nacos到目前为止仅仅支持myql
+
+##### 将nacos持久化到mysql中
+
+1. 准备mysql
+
+2. 建立一个数据库nacos_config
+
+3. 在nacos_config库中执行nacos-mysql.sql
+
+4. 修改nacos配置文件持久化信息到mysql中
+
+   ```properties
+   ### If use MySQL as datasource:
+   spring.datasource.platform=mysql
+   
+   ### Count of DB:
+   db.num=1
+   
+   ### Connect URL of DB:
+   db.url.0=jdbc:mysql://127.0.0.1:3306/nacos_config?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+   db.user.0=root
+   db.password.0=root
+   ```
+
+   
+
+#### Nacos集群搭建
+
+> 1.将nacos中data目录删除
+>
+> 2.将nacos copy 三份 nacos01 nacos02 nacos03
+>
+> 3.在nacos01 nacos02 nacos03的cluster.conf中均加入	
+>
+> ​		127.0.0.1:8845
+> ​		127.0.0.1:8846
+> ​		127.0.0.1:8847
+>
+> 4.修改nacos01 nacos02 nacos03的端口
+>
+> 5.分别启动nacos01 nacos02 nacos03
+
+#### Nginx实现Nacos集群高可用
+
+> 1.在nginx配置中  http内  server外加入配置
+>
+> ​		upstream nacos-servers {
+>
+> ​				server 127.0.0.1:8845;
+>
+> ​				server 127.0.0.1:8846;
+>
+> ​				server 127.0.0.1:8847;
+>
+> ​		}
+>
+> 2.修改
+>
+> ​		location / {
+>
+> ​				proxy_pass http://nacos-server/;
+>
+> ​		}
